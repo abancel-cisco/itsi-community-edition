@@ -1,5 +1,7 @@
 # AI Infrastructure Monitoring content pack
 
+> Part of the **O11y Community Edition** series: free ITSI content packs built on Splunk Observability Cloud data and maintained by the community. Not an official Splunk product and not covered by Splunk support.
+
 ITSI service trees for AI infrastructure monitored by Splunk Observability Cloud:
 
 - **AI Infrastructure Monitoring**: NVIDIA GPUs, vLLM model serving and Milvus vector databases.

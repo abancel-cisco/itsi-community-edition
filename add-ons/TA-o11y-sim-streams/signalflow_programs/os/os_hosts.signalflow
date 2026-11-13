@@ -1,23 +1,21 @@
-# SIM stream: OS Hosts (host.name identity; os.type dimension) -> sim_metrics
-# Source: Smart Agent/collectd host metrics. Feeds DA-ITSI-CP-sim-os-hosts.
+# SIM stream: hosts running the Splunk OTel Collector (Linux, Windows, cloud VMs, Kubernetes nodes) -> sim_metrics
+# Every signal carries a unique label (sf_streamLabel) that the Infrastructure Monitoring base search pivots into columns.
+# Platform dimensions are optional (allow_missing) so the entity discovery can classify each host.
+# A static max delay keeps one late host from holding back every host's data.
+# Counters use rollup='rate' (per second), except network errors which use 'delta' (count per 5 minutes).
 # input: OS_Hosts
-data('cpu.utilization', filter=(not filter('agent', '*'))).promote('host','host_kernel_name','host_linux_version','host_mem_total','host_cpu_cores', allow_missing=True).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('memory.free', filter=(not filter('agent', '*'))).sum(by=['host']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('disk_ops.read', rollup='rate').sum(by=['host.name']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('disk_ops.write', rollup='rate').sum(by=['host.name']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('memory.available', filter=(not filter('agent', '*'))).sum(by=['host']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('memory.used', filter=(not filter('agent', '*'))).sum(by=['host']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('memory.buffered', filter=(not filter('agent', '*'))).sum(by=['host']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('memory.cached', filter=(not filter('agent', '*'))).sum(by=['host']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('memory.active', filter=(not filter('agent', '*'))).sum(by=['host']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('memory.inactive', filter=(not filter('agent', '*'))).sum(by=['host']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('memory.wired', filter=(not filter('agent', '*'))).sum(by=['host']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('df_complex.used', filter=(not filter('agent', '*'))).sum(by=['host']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('df_complex.free', filter=(not filter('agent', '*'))).sum(by=['host']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('memory.utilization', filter=(not filter('agent', '*'))).promote('host',allow_missing=True).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('vmpage_io.swap.in', filter=(not filter('agent', '*')), rollup='rate').promote('host',allow_missing=True).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('vmpage_io.swap.out', filter=(not filter('agent', '*')), rollup='rate').promote('host',allow_missing=True).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('if_octets.tx', rollup='rate').scale(8).mean(by=['host.name']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('if_octets.rx', rollup='rate').scale(8).mean(by=['host.name']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('if_errors.rx', rollup='delta').sum(by=['host.name']).publish('DSIM:Hosts (Smart Agent/collectd)');
-data('if_errors.tx', rollup='delta').sum(by=['host.name']).publish('DSIM:Hosts (Smart Agent/collectd)');
+# metric_resolution: 300000
+# max_delay: 60000
+D = ['host.name','os.type','k8s.node.name','k8s.cluster.name','cloud.provider','cloud.platform','cloud.region','host.type','host.id']
+data('cpu.utilization').mean(by=D, allow_missing=True).publish('oshost_cpu')
+data('memory.utilization').mean(by=D, allow_missing=True).publish('oshost_mem')
+data('disk.summary_utilization').max(by=D, allow_missing=True).publish('oshost_disk')
+data('system.cpu.load_average.5m').mean(by=D, allow_missing=True).publish('oshost_load5')
+data('cpu.num_processors').max(by=D, allow_missing=True).publish('oshost_cpus')
+data('memory.total').max(by=D, allow_missing=True).publish('oshost_mem_total')
+data('system.paging.operations', rollup='rate').sum(by=D, allow_missing=True).publish('oshost_paging')
+data('system.disk.operations', rollup='rate').sum(by=D, allow_missing=True).publish('oshost_disk_ops')
+data('system.disk.io.total', rollup='rate').sum(by=D, allow_missing=True).publish('oshost_disk_io')
+data('system.network.io', filter=filter('direction','receive'), rollup='rate').sum(by=D, allow_missing=True).publish('oshost_net_in')
+data('system.network.io', filter=filter('direction','transmit'), rollup='rate').sum(by=D, allow_missing=True).publish('oshost_net_out')
+data('system.network.errors', rollup='delta').sum(by=D, allow_missing=True).publish('oshost_net_errors')

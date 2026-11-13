@@ -1,5 +1,7 @@
 # Database Monitoring content pack
 
+> Part of the **O11y Community Edition** series: free ITSI content packs built on Splunk Observability Cloud data and maintained by the community. Not an official Splunk product and not covered by Splunk support.
+
 ITSI service tree for Oracle, Microsoft SQL Server and PostgreSQL instances monitored by Splunk Observability Cloud. Metrics reach Splunk through the Splunk Infrastructure Monitoring Add-on and the companion [`TA-o11y-sim-streams`](../../add-ons/TA-o11y-sim-streams).
 
 Package: `DA-ITSI-CP-CUST-6a4e4181bb0ab5578803e6fd_1_2_0.tar.gz`, attached to the `database-monitoring-v1.2.0` release.

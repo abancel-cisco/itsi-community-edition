@@ -1,0 +1,12 @@
+# SIM stream: Google Compute Engine instances from the GCP integration (agentless) -> sim_metrics
+# Every signal carries a unique label (sf_streamLabel) that the Infrastructure Monitoring base search pivots into columns.
+# Byte and operation counts use rollup='sum' (totals per 5 minutes); CPU utilization is a 0-1 ratio scaled to percent.
+# Metric names follow the splunk_ta_sim SAMPLE_GCP input. Not validated against live data yet.
+# input: GCP_Compute
+# metric_resolution: 300000
+F = filter('instance_id','*')
+data('instance/cpu/utilization', filter=F, rollup='average').scale(100).publish('gcpvm_cpu')
+data('instance/network/received_bytes_count', filter=F, rollup='sum').publish('gcpvm_net_in')
+data('instance/network/sent_bytes_count', filter=F, rollup='sum').publish('gcpvm_net_out')
+data('instance/disk/read_ops_count', filter=F, rollup='sum').publish('gcpvm_disk_read_ops')
+data('instance/disk/write_ops_count', filter=F, rollup='sum').publish('gcpvm_disk_write_ops')

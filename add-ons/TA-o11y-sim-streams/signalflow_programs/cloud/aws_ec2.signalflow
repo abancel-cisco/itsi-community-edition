@@ -1,0 +1,12 @@
+# SIM stream: AWS EC2 instances from the CloudWatch integration (agentless) -> sim_metrics
+# Every signal carries a unique label (sf_streamLabel) that the Infrastructure Monitoring base search pivots into columns.
+# Byte and operation counts use rollup='sum': totals per 5 minutes, whatever the CloudWatch period (basic or detailed).
+# input: AWS_EC2
+# metric_resolution: 300000
+F = filter('namespace','AWS/EC2') and filter('InstanceId','*')
+data('CPUUtilization', filter=F and filter('stat','mean'), rollup='average').publish('awsec2_cpu')
+data('NetworkIn', filter=F and filter('stat','sum'), rollup='sum').publish('awsec2_net_in')
+data('NetworkOut', filter=F and filter('stat','sum'), rollup='sum').publish('awsec2_net_out')
+data('EBSReadOps', filter=F and filter('stat','sum'), rollup='sum').publish('awsec2_ebs_read_ops')
+data('EBSWriteOps', filter=F and filter('stat','sum'), rollup='sum').publish('awsec2_ebs_write_ops')
+data('StatusCheckFailed', filter=F and filter('stat','upper'), rollup='max').publish('awsec2_status_failed')

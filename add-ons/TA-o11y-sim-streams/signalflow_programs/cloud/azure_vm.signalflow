@@ -1,0 +1,14 @@
+# SIM stream: Azure virtual machines from the Azure Monitor integration (agentless) -> sim_metrics
+# Every signal carries a unique label (sf_streamLabel) that the Infrastructure Monitoring base search pivots into columns.
+# Byte counts use rollup='sum' (totals per 5 minutes); rates and percentages use rollup='average'.
+# Metric names follow the splunk_ta_sim SAMPLE_Azure input. Not validated against live data yet.
+# input: Azure_VM
+# metric_resolution: 300000
+F = filter('resource_type','Microsoft.Compute/virtualMachines') and filter('primary_aggregation_type','true')
+data('Percentage CPU', filter=F and filter('aggregation_type','average'), rollup='average').promote('azure_resource_name').publish('azvm_cpu')
+data('Available Memory Bytes', filter=F and filter('aggregation_type','average'), rollup='average').promote('azure_resource_name').publish('azvm_mem_avail')
+data('Network In', filter=F and filter('aggregation_type','total'), rollup='sum').promote('azure_resource_name').publish('azvm_net_in')
+data('Network Out', filter=F and filter('aggregation_type','total'), rollup='sum').promote('azure_resource_name').publish('azvm_net_out')
+data('Disk Read Operations/Sec', filter=F and filter('aggregation_type','average'), rollup='average').promote('azure_resource_name').publish('azvm_disk_read_ops')
+data('Disk Write Operations/Sec', filter=F and filter('aggregation_type','average'), rollup='average').promote('azure_resource_name').publish('azvm_disk_write_ops')
+data('VmAvailabilityMetric', filter=F and filter('aggregation_type','average'), rollup='min').promote('azure_resource_name').publish('azvm_available')

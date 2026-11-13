@@ -10,6 +10,8 @@ Per-file directives (optional, in leading comments):
     # input: <StanzaName>     default: filename stem, title-cased
     # index: <index>          default: sim_metrics
     # interval: <seconds>     default: 300
+    # metric_resolution: <ms> default: unset (SIM add-on default, -1)
+    # max_delay: <ms>         default: unset (Observability Cloud computes it, -1)
 
 Run from the TA root after editing any .signalflow file:
     python3 scripts/build_inputs_conf.py
@@ -47,7 +49,7 @@ def parse(path: Path) -> tuple[dict, str]:
             continue
         if stripped.startswith("#") or stripped.startswith("//"):
             body = stripped.lstrip("#/ ").strip()
-            for key in ("input", "index", "interval"):
+            for key in ("input", "index", "interval", "metric_resolution", "max_delay"):
                 prefix = f"{key}:"
                 if body.lower().startswith(prefix):
                     directives[key] = body[len(prefix):].strip()
@@ -84,6 +86,10 @@ def main() -> int:
         out.append("sourcetype = stash")
         out.append(f"interval = {interval}")
         out.append("additional_meta_data_flag = 1")
+        if "metric_resolution" in directives:
+            out.append(f"metric_resolution = {directives['metric_resolution']}")
+        if "max_delay" in directives:
+            out.append(f"sim_max_delay = {directives['max_delay']}")
         out.append("# org_id = <your O11y org id>  ; blank = SIM add-on default org")
         out.append(f'signal_flow_programs = "{program}"')
         out.append("disabled = 1")
